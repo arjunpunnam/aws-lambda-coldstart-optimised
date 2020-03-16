@@ -50,7 +50,7 @@ provider:
 
 # you can add packaging information here
 package:
-  artifact: target/hello-dev.jar
+  artifact: target/lambda-optimization.jar
 
 functions:
   hello:
