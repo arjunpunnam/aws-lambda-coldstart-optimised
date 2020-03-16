@@ -5,11 +5,10 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 
+import com.google.gson.Gson;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ApiGatewayResponse {
 
@@ -17,6 +16,8 @@ public class ApiGatewayResponse {
 	private final String body;
 	private final Map<String, String> headers;
 	private final boolean isBase64Encoded;
+	private static final Logger LOG = LogManager.getLogger(ApiGatewayResponse.Builder.class);
+	private static final Gson gson = new Gson();
 
 	public ApiGatewayResponse(int statusCode, String body, Map<String, String> headers, boolean isBase64Encoded) {
 		this.statusCode = statusCode;
@@ -48,10 +49,6 @@ public class ApiGatewayResponse {
 
 	public static class Builder {
 
-		private static final Logger LOG = LogManager.getLogger(ApiGatewayResponse.Builder.class);
-
-		private static final ObjectMapper objectMapper = new ObjectMapper();
-
 		private int statusCode = 200;
 		private Map<String, String> headers = Collections.emptyMap();
 		private String rawBody;
@@ -78,8 +75,8 @@ public class ApiGatewayResponse {
 		}
 
 		/**
-		 * Builds the {@link ApiGatewayResponse} using the passed object body
-		 * converted to JSON.
+		 * Builds the {@link ApiGatewayResponse} using the passed object body converted
+		 * to JSON.
 		 */
 		public Builder setObjectBody(Object objectBody) {
 			this.objectBody = objectBody;
@@ -87,9 +84,9 @@ public class ApiGatewayResponse {
 		}
 
 		/**
-		 * Builds the {@link ApiGatewayResponse} using the passed binary body
-		 * encoded as base64. {@link #setBase64Encoded(boolean)
-		 * setBase64Encoded(true)} will be in invoked automatically.
+		 * Builds the {@link ApiGatewayResponse} using the passed binary body encoded as
+		 * base64. {@link #setBase64Encoded(boolean) setBase64Encoded(true)} will be in
+		 * invoked automatically.
 		 */
 		public Builder setBinaryBody(byte[] binaryBody) {
 			this.binaryBody = binaryBody;
@@ -101,8 +98,7 @@ public class ApiGatewayResponse {
 		 * A binary or rather a base64encoded responses requires
 		 * <ol>
 		 * <li>"Binary Media Types" to be configured in API Gateway
-		 * <li>a request with an "Accept" header set to one of the "Binary Media
-		 * Types"
+		 * <li>a request with an "Accept" header set to one of the "Binary Media Types"
 		 * </ol>
 		 */
 		public Builder setBase64Encoded(boolean base64Encoded) {
@@ -115,12 +111,7 @@ public class ApiGatewayResponse {
 			if (rawBody != null) {
 				body = rawBody;
 			} else if (objectBody != null) {
-				try {
-					body = objectMapper.writeValueAsString(objectBody);
-				} catch (JsonProcessingException e) {
-					LOG.error("failed to serialize object", e);
-					throw new RuntimeException(e);
-				}
+				body = gson.toJson(objectBody);
 			} else if (binaryBody != null) {
 				body = new String(Base64.getEncoder().encode(binaryBody), StandardCharsets.UTF_8);
 			}
