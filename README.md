@@ -32,3 +32,5 @@ Now lets go and check the logs
 
 
 ![Getting Started](./images/initialcoldstart.jpg)
+
+to be continued...
